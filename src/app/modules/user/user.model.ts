@@ -45,6 +45,10 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       default: null,
     },
+    location: {
+      type: String,
+      default: null,
+    },
     status: {
       type: String,
       enum: ['active', 'delete'],

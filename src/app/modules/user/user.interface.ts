@@ -9,7 +9,7 @@ export type IUser = {
   contact: string;
   email: string;
   password: string;
-  location: string;
+  location?: string;
   image?: string;
   avatar?: string;
   status: 'active' | 'delete';
