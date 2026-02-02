@@ -16,10 +16,11 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (values: ISendEmail) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Simply Good Food" ${config.email.from}`,
+      from: `"Trade Lock" ${config.email.from}`,
       to: values.to,
       subject: values.subject,
       html: values.html,
+      attachments: values.attachments,
     });
 
     logger.info('Mail send successfully', info.accepted);

@@ -1,39 +1,130 @@
+import path from 'path';
 import { ICreateAccount, IResetPassword } from '../types/emailTamplate';
 
 const createAccount = (values: ICreateAccount) => {
+  const logoPath = path.join(process.cwd(), 'src', 'assets', 'logo.png');
   const data = {
     to: values.email,
-    subject: 'Verify your account',
-    html: `<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 50px; padding: 20px; color: #555;">
-    <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <img src="https://i.postimg.cc/6pgNvKhD/logo.png" alt="Logo" style="display: block; margin: 0 auto 20px; width:150px" />
-          <h2 style="color: #277E16; font-size: 24px; margin-bottom: 20px;">Hey! ${values.name}, Your Toothlens Account Credentials</h2>
-        <div style="text-align: center;">
-            <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Your single use code is:</p>
-            <div style="background-color: #277E16; width: 80px; padding: 10px; text-align: center; border-radius: 8px; color: #fff; font-size: 25px; letter-spacing: 2px; margin: 20px auto;">${values.otp}</div>
-            <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This code is valid for 3 minutes.</p>
+    subject: 'Verify your TradeLock account',
+    html: `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Your Account</title>
+        <style>
+            body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; }
+            .container { width: 100%; max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+            .header { background: #173616; padding: 32px; text-align: center; }
+            .content { padding: 40px 30px; text-align: center; }
+            .greeting { font-size: 24px; color: #173616; margin-bottom: 15px; font-weight: bold; }
+            .message { font-size: 16px; color: #555; margin-bottom: 25px; }
+            .otp-container { background-color: #f0fdf4; border: 1px dashed #166534; border-radius: 8px; padding: 24px; display: inline-block; margin: 20px 0; min-width: 200px; }
+            .otp-code { font-size: 32px; font-weight: 700; color: #166534; letter-spacing: 6px; font-family: 'Courier New', monospace; }
+            .expiry { font-size: 14px; color: #666; margin-top: 15px; }
+            .footer { background-color: #fafafa; padding: 20px; text-align: center; font-size: 12px; color: #aaa; border-top: 1px solid #eeeeee; }
+            .footer a { color: #173616; text-decoration: none; font-weight: 600; }
+            @media only screen and (max-width: 600px) {
+                .container { margin: 15px; width: auto; }
+                .content { padding: 30px 20px; }
+                .otp-code { font-size: 26px; letter-spacing: 4px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                 <img src="cid:logo" alt="TradeLock" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
+            </div>
+            <div class="content">
+                <div class="greeting">Hello, ${values.name}</div>
+                <p class="message">Welcome to TradeLock! We're thrilled to have you here. Please verify your email address to unlock your account.</p>
+                <div class="otp-container">
+                    <div class="otp-code">${values.otp}</div>
+                </div>
+                <p class="expiry">This code expires in <strong>3 minutes</strong>.</p>
+                <p style="font-size: 13px; color: #9ca3af; margin-top: 30px; border-top: 1px solid #f3f4f6; padding-top: 20px;">If you didn't create an account, please ignore this email.</p>
+            </div>
+            <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} TradeLock. All rights reserved.</p>
+                <p><a href="#">Privacy Policy</a> • <a href="#">Support</a></p>
+            </div>
         </div>
-    </div>
-</body>`,
+    </body>
+    </html>
+    `,
+    attachments: [
+      {
+        filename: 'logo.png',
+        path: logoPath,
+        cid: 'logo',
+      },
+    ],
   };
   return data;
 };
 
 const resetPassword = (values: IResetPassword) => {
+  const logoPath = path.join(process.cwd(), 'src', 'assets', 'logo.png');
   const data = {
     to: values.email,
-    subject: 'Reset your password',
-    html: `<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 50px; padding: 20px; color: #555;">
-    <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <img src="https://i.postimg.cc/6pgNvKhD/logo.png" alt="Logo" style="display: block; margin: 0 auto 20px; width:150px" />
-        <div style="text-align: center;">
-            <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Your single use code is:</p>
-            <div style="background-color: #277E16; width: 80px; padding: 10px; text-align: center; border-radius: 8px; color: #fff; font-size: 25px; letter-spacing: 2px; margin: 20px auto;">${values.otp}</div>
-            <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This code is valid for 3 minutes.</p>
-                <p style="color: #b9b4b4; font-size: 16px; line-height: 1.5; margin-bottom: 20px;text-align:left">If you didn't request this code, you can safely ignore this email. Someone else might have typed your email address by mistake.</p>
+    subject: 'Reset your TradeLock password',
+    html: `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Password</title>
+        <style>
+            body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; }
+            .container { width: 100%; max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+            .header { background: #173616; padding: 32px; text-align: center; }
+            .content { padding: 40px 30px; text-align: center; }
+            .greeting { font-size: 24px; color: #173616; margin-bottom: 15px; font-weight: bold; }
+            .message { font-size: 16px; color: #555; margin-bottom: 25px; }
+            .otp-container { background-color: #fff1f2; border: 1px dashed #be123c; border-radius: 8px; padding: 24px; display: inline-block; margin: 20px 0; min-width: 200px; }
+            .otp-code { font-size: 32px; font-weight: 700; color: #be123c; letter-spacing: 6px; font-family: 'Courier New', monospace; }
+            .expiry { font-size: 14px; color: #666; margin-top: 15px; }
+            .footer { background-color: #fafafa; padding: 20px; text-align: center; font-size: 12px; color: #aaa; border-top: 1px solid #eeeeee; }
+            .footer a { color: #173616; text-decoration: none; font-weight: 600; }
+            @media only screen and (max-width: 600px) {
+                .container { margin: 15px; width: auto; }
+                .content { padding: 30px 20px; }
+                .otp-code { font-size: 26px; letter-spacing: 4px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                 <img src="cid:logo" alt="TradeLock" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
+            </div>
+            <div class="content">
+                <div class="greeting">Reset Password</div>
+                <p class="message">We received a request to reset your TradeLock password. Enter the code below to proceed.</p>
+                <div class="otp-container">
+                    <div class="otp-code">${values.otp}</div>
+                </div>
+                <p class="expiry">This code expires in <strong>3 minutes</strong>.</p>
+                <p style="font-size: 13px; color: #9ca3af; margin-top: 30px; border-top: 1px solid #f3f4f6; padding-top: 20px;">If you didn't request a password reset, you can safely ignore this email.</p>
+            </div>
+            <div class="footer">
+                <p>&copy; ${new Date().getFullYear()} TradeLock. All rights reserved.</p>
+                <p><a href="#">Security</a> • <a href="#">Support</a></p>
+            </div>
         </div>
-    </div>
-</body>`,
+    </body>
+    </html>
+    `,
+    attachments: [
+      {
+        filename: 'logo.png',
+        path: logoPath,
+        cid: 'logo',
+      },
+    ],
   };
   return data;
 };
