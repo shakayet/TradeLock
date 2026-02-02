@@ -3,7 +3,7 @@ import { IMessage } from './chat.interface';
 
 const saveMessageToDB = async (payload: IMessage) => {
   const result = await Chat.create(payload);
-  return result.populate('sender', 'name email profile');
+  return result.populate('sender', 'name image');
 };
 
 const getMessagesFromDB = async (
@@ -16,7 +16,7 @@ const getMessagesFromDB = async (
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
-    .populate('sender', 'name email profile');
+    .populate('sender', 'name image');
 
   const total = await Chat.countDocuments();
 
