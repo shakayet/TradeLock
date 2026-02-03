@@ -42,5 +42,6 @@ export default {
     secretAccessKey: process.env.Secret_access_key,
     region: process.env.AWS_REGION || 'us-east-1',
     bucket: process.env.AWS_BUCKET || 'trade-lock',
+    cloudFrontDomain: process.env.CLOUDFRONT_DOMAIN || '',
   },
 };

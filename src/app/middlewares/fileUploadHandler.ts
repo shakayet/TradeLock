@@ -1,67 +1,28 @@
-import { S3Client } from '@aws-sdk/client-s3';
-import { Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import multer, { FileFilterCallback } from 'multer';
-import multerS3 from 'multer-s3';
-import config from '../../config';
 import ApiError from '../../errors/ApiError';
-
-const s3 = new S3Client({
-  region: config.aws.region,
-  credentials: {
-    accessKeyId: config.aws.accessKeyId as string,
-    secretAccessKey: config.aws.secretAccessKey as string,
-  },
-});
+import { uploadToS3 } from '../../helpers/s3Helper';
+import { processImage } from '../../helpers/imageProcessor';
 
 const fileUploadHandler = () => {
-  const storage = multerS3({
-    s3: s3,
-    bucket: config.aws.bucket as string,
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    key: (req, file, cb) => {
-      let folderPath = '';
-      const date = Date.now();
-      
-      if (file.fieldname === 'image') {
-        const request = req as any;
-        // Check URL to distinguish between Chat and User Profile images
-        if (request.originalUrl && request.originalUrl.includes('/chat')) {
-          folderPath = 'chat_image';
-        } else if (request.originalUrl && (request.originalUrl.includes('/user') || request.originalUrl.includes('/profile'))) {
-          folderPath = 'Profile';
-        } else {
-          folderPath = 'others';
-        }
-      } else if (file.fieldname === 'media') {
-        folderPath = 'media';
-      } else if (file.fieldname === 'doc') {
-        folderPath = 'chat_pdf';
-      } else {
-        folderPath = 'others';
-      }
-
-      // Sanitize filename
-      const sanitizedFileName = file.originalname.replace(/\s+/g, '-').toLowerCase();
-      const fileName = `${folderPath}/${date}-${sanitizedFileName}`;
-      
-      cb(null, fileName);
-    },
-  });
+  // Use memory storage to process images before uploading
+  const storage = multer.memoryStorage();
 
   const filterFilter = (req: Request, file: any, cb: FileFilterCallback) => {
     if (file.fieldname === 'image') {
       if (
         file.mimetype === 'image/jpeg' ||
         file.mimetype === 'image/png' ||
-        file.mimetype === 'image/jpg'
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'image/webp'
       ) {
         cb(null, true);
       } else {
         cb(
           new ApiError(
             StatusCodes.BAD_REQUEST,
-            'Only .jpeg, .png, .jpg file supported'
+            'Only .jpeg, .png, .jpg, .webp file supported'
           )
         );
       }
@@ -96,7 +57,68 @@ const fileUploadHandler = () => {
     { name: 'doc', maxCount: 3 },
   ]);
 
-  return upload;
+  // Wrapper middleware to handle processing and S3 upload
+  return async (req: Request, res: Response, next: NextFunction) => {
+    upload(req, res, async (err: any) => {
+      if (err) return next(err);
+      if (!req.files) return next();
+
+      try {
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+        const uploadPromises: Promise<void>[] = [];
+
+        for (const fieldname of Object.keys(files)) {
+          for (const file of files[fieldname]) {
+            uploadPromises.push((async () => {
+              let folderPath = 'others';
+              const date = Date.now();
+              const request = req as any;
+
+              // Determine folder path
+              if (fieldname === 'image') {
+                if (request.originalUrl?.includes('/chat')) folderPath = 'chat_image';
+                else if (request.originalUrl?.includes('/user') || request.originalUrl?.includes('/profile')) folderPath = 'Profile';
+              } else if (fieldname === 'doc') {
+                folderPath = 'chat_pdf';
+              } else if (fieldname === 'media') {
+                folderPath = 'media';
+              }
+
+              let finalBuffer = file.buffer;
+              let finalMimetype = file.mimetype;
+              let extension = file.originalname.split('.').pop();
+
+              // IMAGE PROCESSING STEP
+              if (fieldname === 'image') {
+                const processed = await processImage(file.buffer);
+                finalBuffer = processed.buffer;
+                finalMimetype = 'image/webp';
+                extension = 'webp';
+              }
+
+              const sanitizedName = file.originalname
+                .replace(/\.[^/.]+$/, "") // remove extension
+                .replace(/\s+/g, '-')
+                .toLowerCase();
+              
+              const key = `${folderPath}/${date}-${sanitizedName}.${extension}`;
+
+              // UPLOAD TO S3 & GET CLOUDFRONT/S3 URL
+              const location = await uploadToS3(finalBuffer, key, finalMimetype);
+              
+              // Attach the URL to the file object so controllers can access it
+              (file as any).location = location;
+            })());
+          }
+        }
+
+        await Promise.all(uploadPromises);
+        next();
+      } catch (error) {
+        next(error);
+      }
+    });
+  };
 };
 
 export default fileUploadHandler;

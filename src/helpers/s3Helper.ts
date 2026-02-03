@@ -1,4 +1,4 @@
-import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import config from '../config';
 import { errorLogger, logger } from '../shared/logger';
 
@@ -10,18 +10,41 @@ const s3Client = new S3Client({
   },
 });
 
+export const uploadToS3 = async (
+  fileBuffer: Buffer,
+  key: string,
+  contentType: string
+): Promise<string> => {
+  const command = new PutObjectCommand({
+    Bucket: config.aws.bucket,
+    Key: key,
+    Body: fileBuffer,
+    ContentType: contentType,
+  });
+
+  await s3Client.send(command);
+
+  // Return CloudFront URL if configured, otherwise S3 URL
+  if (config.aws.cloudFrontDomain) {
+    const domain = config.aws.cloudFrontDomain.endsWith('/') 
+      ? config.aws.cloudFrontDomain.slice(0, -1) 
+      : config.aws.cloudFrontDomain;
+    return `${domain}/${key}`;
+  }
+
+  return `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${key}`;
+};
+
 export const deleteFromS3 = async (url: string) => {
   try {
-    // Extract key from URL
-    // Examples: 
-    // https://trade-lock.s3.us-east-1.amazonaws.com/Profile/123-img.png
-    // Or if it's just a path: Profile/123-img.png
-    
     let key = '';
+    
+    // Handle CloudFront or S3 URLs
     if (url.startsWith('http')) {
-      const urlParts = url.split('.amazonaws.com/');
-      if (urlParts.length > 1) {
-        key = urlParts[1];
+      if (config.aws.cloudFrontDomain && url.includes(config.aws.cloudFrontDomain)) {
+        key = url.split(`${config.aws.cloudFrontDomain}/`)[1];
+      } else if (url.includes('.amazonaws.com/')) {
+        key = url.split('.amazonaws.com/')[1];
       }
     } else {
       key = url;
