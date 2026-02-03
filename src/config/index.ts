@@ -37,4 +37,10 @@ export default {
     },
     sessionSecret: process.env.SESSION_SECRET || 'your_session_secret_key',
   },
+  aws: {
+    accessKeyId: process.env.Access_key_ID,
+    secretAccessKey: process.env.Secret_access_key,
+    region: process.env.AWS_REGION || 'us-east-1',
+    bucket: process.env.AWS_BUCKET || 'trade-lock',
+  },
 };

@@ -1,59 +1,54 @@
+import { S3Client } from '@aws-sdk/client-s3';
 import { Request } from 'express';
-import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import multer, { FileFilterCallback } from 'multer';
-import path from 'path';
+import multerS3 from 'multer-s3';
+import config from '../../config';
 import ApiError from '../../errors/ApiError';
 
+const s3 = new S3Client({
+  region: config.aws.region,
+  credentials: {
+    accessKeyId: config.aws.accessKeyId as string,
+    secretAccessKey: config.aws.secretAccessKey as string,
+  },
+});
+
 const fileUploadHandler = () => {
-  //create upload folder
-  const baseUploadDir = path.join(process.cwd(), 'uploads');
-  if (!fs.existsSync(baseUploadDir)) {
-    fs.mkdirSync(baseUploadDir);
-  }
-
-  //folder create for different file
-  const createDir = (dirPath: string) => {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath);
-    }
-  };
-
-  //create filename
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      let uploadDir;
-      switch (file.fieldname) {
-        case 'image':
-          uploadDir = path.join(baseUploadDir, 'image');
-          break;
-        case 'media':
-          uploadDir = path.join(baseUploadDir, 'media');
-          break;
-        case 'doc':
-          uploadDir = path.join(baseUploadDir, 'doc');
-          break;
-        default:
-          throw new ApiError(StatusCodes.BAD_REQUEST, 'File is not supported');
+  const storage = multerS3({
+    s3: s3,
+    bucket: config.aws.bucket as string,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    key: (req, file, cb) => {
+      let folderPath = '';
+      const date = Date.now();
+      
+      if (file.fieldname === 'image') {
+        const request = req as any;
+        // Check URL to distinguish between Chat and User Profile images
+        if (request.originalUrl && request.originalUrl.includes('/chat')) {
+          folderPath = 'chat_image';
+        } else if (request.originalUrl && (request.originalUrl.includes('/user') || request.originalUrl.includes('/profile'))) {
+          folderPath = 'Profile';
+        } else {
+          folderPath = 'others';
+        }
+      } else if (file.fieldname === 'media') {
+        folderPath = 'media';
+      } else if (file.fieldname === 'doc') {
+        folderPath = 'chat_pdf';
+      } else {
+        folderPath = 'others';
       }
-      createDir(uploadDir);
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      const fileExt = path.extname(file.originalname);
-      const fileName =
-        file.originalname
-          .replace(fileExt, '')
-          .toLowerCase()
-          .split(' ')
-          .join('-') +
-        '-' +
-        Date.now();
-      cb(null, fileName + fileExt);
+
+      // Sanitize filename
+      const sanitizedFileName = file.originalname.replace(/\s+/g, '-').toLowerCase();
+      const fileName = `${folderPath}/${date}-${sanitizedFileName}`;
+      
+      cb(null, fileName);
     },
   });
 
-  //file filter
   const filterFilter = (req: Request, file: any, cb: FileFilterCallback) => {
     if (file.fieldname === 'image') {
       if (
@@ -100,6 +95,7 @@ const fileUploadHandler = () => {
     { name: 'media', maxCount: 3 },
     { name: 'doc', maxCount: 3 },
   ]);
+
   return upload;
 };
 

@@ -5,18 +5,25 @@ import { ChatService } from './chat.service';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '../../../errors/ApiError';
 import fs from 'fs';
+import { getMultipleFilesPath, getSingleFilePath } from '../../../shared/getFilePath';
+
+import { deleteFromS3 } from '../../../helpers/s3Helper';
 
 // Helper to remove files
-const removeFiles = (files: { [fieldname: string]: Express.Multer.File[] }) => {
-    Object.values(files).flat().forEach(file => {
-        if(fs.existsSync(file.path)){
-            fs.unlinkSync(file.path);
-        }
+const removeFiles = (files: any) => {
+  if (files) {
+    Object.values(files).flat().forEach((file: any) => {
+      if (file.location) {
+        deleteFromS3(file.location);
+      } else if (file.path && fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
     });
+  }
 };
 
 const sendMessage = catchAsync(async (req: Request, res: Response) => {
-  const user = req.user; 
+  const user = req.user;
   const { text } = req.body;
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
@@ -31,8 +38,8 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
 
   // 2. Validate Images count
   if (images.length > 3) {
-     removeFiles(files);
-     throw new ApiError(StatusCodes.BAD_REQUEST, 'You can only upload up to 3 images');
+    removeFiles(files);
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'You can only upload up to 3 images');
   }
 
   // 3. Validate Total Image Size (Max 10MB)
@@ -43,8 +50,8 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Total image size must not exceed 10 MB');
   }
 
-  const imagePaths = images.map(file => `/uploads/image/${file.filename}`);
-  const pdfPath = docs.length > 0 ? `/uploads/doc/${docs[0].filename}` : undefined;
+  const imagePaths = getMultipleFilesPath(files, 'image') || [];
+  const pdfPath = getSingleFilePath(files, 'doc');
 
   const payload = {
     sender: (user as any).id,
