@@ -74,8 +74,19 @@ const updateProfileToDB = async (
   return updateDoc;
 };
 
+const deleteAccountFromDB = async (user: JwtPayload): Promise<void> => {
+  const { id } = user;
+  const isExistUser = await User.isExistUserById(id);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  await User.deleteAccount(id);
+};
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   updateProfileToDB,
+  deleteAccountFromDB,
 };

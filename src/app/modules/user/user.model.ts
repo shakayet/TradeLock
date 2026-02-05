@@ -99,6 +99,10 @@ userSchema.statics.isExistUserByEmail = async (email: string) => {
   return isExist;
 };
 
+userSchema.statics.deleteAccount = async (id: string) => {
+  return await User.findByIdAndUpdate(id, { status: 'delete' });
+};
+
 //is match password
 userSchema.statics.isMatchPassword = async (
   password: string,
