@@ -100,7 +100,20 @@ userSchema.statics.isExistUserByEmail = async (email: string) => {
 };
 
 userSchema.statics.deleteAccount = async (id: string) => {
-  return await User.findByIdAndUpdate(id, { status: 'delete' });
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+  }
+  return await User.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        status: 'delete',
+        email: `${user.email}_deleted_${Date.now()}`,
+      },
+    },
+    { new: true },
+  );
 };
 
 //is match password
