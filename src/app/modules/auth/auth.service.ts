@@ -256,9 +256,19 @@ const changePasswordToDB = async (
 
 // resend otp
 const resendOtpToDB = async (email: string) => {
-  const isExistUser = await User.findOne({ email });
+  const isExistUser = await User.findOne({ email }).select('+authentication');
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  if (
+    isExistUser.authentication?.expireAt &&
+    new Date() < isExistUser.authentication.expireAt
+  ) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Please wait for 3 minutes before requesting a new OTP',
+    );
   }
 
   // If user already verified, no need to resend
