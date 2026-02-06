@@ -5,6 +5,7 @@ import { OAuthRoutes } from '../app/modules/passport/oauth.route';
 import { ChatRoutes } from '../app/modules/chat/chat.route';
 import { FaqRoutes } from '../app/modules/faq/faq.route';
 import { TermsAndConditionsRoutes } from '../app/modules/termsAndConditions/termsAndConditions.route';
+import { PersonalChatRoutes } from '../app/modules/personalChat/personalChat.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -31,6 +32,10 @@ const apiRoutes = [
   {
     path: '/terms-and-conditions',
     route: TermsAndConditionsRoutes,
+  },
+  {
+    path: '/personal-chat',
+    route: PersonalChatRoutes,
   },
 ];
 
