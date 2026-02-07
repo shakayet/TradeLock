@@ -14,6 +14,11 @@ const conversationSchema = new Schema<IConversation, ConversationModel>(
       type: Schema.Types.ObjectId,
       ref: 'Message',
     },
+    participantKey: {
+      type: String,
+      required: true,
+      unique: true,
+    },
   },
   {
     timestamps: true,
@@ -22,6 +27,8 @@ const conversationSchema = new Schema<IConversation, ConversationModel>(
     },
   }
 );
+
+conversationSchema.index({ participantKey: 1 }, { unique: true, sparse: true });
 
 export const Conversation = model<IConversation, ConversationModel>(
   'Conversation',

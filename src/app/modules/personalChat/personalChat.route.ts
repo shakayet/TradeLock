@@ -27,23 +27,29 @@ router.post(
   fileUploadHandler(),
   (req: Request, res: Response, next: NextFunction) => {
     if (req.body.data) {
-      req.body = PersonalChatValidation.sendMessageZodSchema.parse(
-        JSON.parse(req.body.data)
-      );
+      try {
+        req.body = JSON.parse(req.body.data);
+      } catch {
+        // leave req.body as is if not JSON
+      }
     }
-    return PersonalChatController.sendMessage(req, res, next);
-  }
+    next();
+  },
+  validateRequest(PersonalChatValidation.sendMessageZodSchema),
+  PersonalChatController.sendMessage
 );
 
 router.get(
   '/messages/:conversationId',
   auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.USER),
+  validateRequest(PersonalChatValidation.conversationParamsZodSchema),
   PersonalChatController.getMessages
 );
 
 router.patch(
   '/mark-as-read/:conversationId',
   auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.USER),
+  validateRequest(PersonalChatValidation.conversationParamsZodSchema),
   PersonalChatController.markAsRead
 );
 

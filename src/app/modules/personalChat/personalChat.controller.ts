@@ -92,7 +92,13 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
     isRead: false,
   };
 
-  const result = await PersonalChatService.saveMessageToDB(payload);
+  let result;
+  try {
+    result = await PersonalChatService.saveMessageToDB(payload);
+  } catch (error) {
+    removeFiles(files);
+    throw error;
+  }
 
   // Socket emit
   // @ts-ignore
@@ -114,7 +120,8 @@ const getMessages = catchAsync(async (req: Request, res: Response) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
 
-    const result = await PersonalChatService.getMessagesFromDB(conversationId, page, limit);
+    const userId = (req.user as any).id;
+    const result = await PersonalChatService.getMessagesFromDB(conversationId, page, limit, userId);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,

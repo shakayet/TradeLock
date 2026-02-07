@@ -1,7 +1,7 @@
 import { Model, Types } from 'mongoose';
 
 export type IMessage = {
-  sender: Types.ObjectId;
+  sender: Types.ObjectId | string;
   text?: string;
   images?: string[];
   pdf?: string;
