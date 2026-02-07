@@ -9,11 +9,21 @@ export type IUser = {
   email: string;
   password: string;
   role: USER_ROLES;
-  location?: string;
+  address?: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  }
   country?: string;
   trade_type?: string;
   image?: string;
   DOB?: string;
+  bio?: string;
+  skills?: string[];
+  experience?: string;
+  coverage_area?: string;
+  services?: string;
+  rating?: number;
   status: 'active' | 'delete';
   verified: boolean;
   provider?: 'local' | 'google' | 'facebook' | 'github';

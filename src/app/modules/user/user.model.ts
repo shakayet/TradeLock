@@ -35,6 +35,10 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       default: null,
     },
+    services: {
+      type: String,
+      default: null,
+    },
     password: {
       type: String,
       select: 0,
@@ -49,8 +53,15 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       default: null,
     },
-    location: {
+    address: {
       type: String,
+      default: null,
+    },
+    location: {
+      type: {
+        latitude: Number,
+        longitude: Number,
+      },
       default: null,
     },
     status: {
