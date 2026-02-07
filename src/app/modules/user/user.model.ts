@@ -12,13 +12,9 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       required: true,
     },
-    firstName: {
+    contact: {
       type: String,
-      default: null,
-    },
-    lastName: {
-      type: String,
-      default: null,
+      required: true,
     },
     role: {
       type: String,
@@ -31,6 +27,10 @@ const userSchema = new Schema<IUser, UserModal>(
       unique: true,
       lowercase: true,
     },
+    country: {
+      type: String,
+      default: "United Kingdom",
+    },
     password: {
       type: String,
       select: 0,
@@ -41,7 +41,7 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       default: 'https://i.ibb.co/z5YHLV9/profile.png',
     },
-    avatar: {
+    DOB: {
       type: String,
       default: null,
     },

@@ -25,12 +25,10 @@ const conversationSchema = new Schema<IConversation, ConversationModel>(
     toJSON: {
       virtuals: true,
     },
-  }
+  },
 );
-
-conversationSchema.index({ participantKey: 1 }, { unique: true, sparse: true });
 
 export const Conversation = model<IConversation, ConversationModel>(
   'Conversation',
-  conversationSchema
+  conversationSchema,
 );
