@@ -31,6 +31,10 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       default: "United Kingdom",
     },
+    trade_type: {
+      type: String,
+      default: null,
+    },
     password: {
       type: String,
       select: 0,

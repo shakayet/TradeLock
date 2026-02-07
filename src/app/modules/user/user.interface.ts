@@ -11,6 +11,7 @@ export type IUser = {
   role: USER_ROLES;
   location?: string;
   country?: string;
+  trade_type?: string;
   image?: string;
   DOB?: string;
   status: 'active' | 'delete';
