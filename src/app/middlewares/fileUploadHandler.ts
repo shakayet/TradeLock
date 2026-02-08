@@ -10,7 +10,7 @@ const fileUploadHandler = () => {
   const storage = multer.memoryStorage();
 
   const filterFilter = (req: Request, file: any, cb: FileFilterCallback) => {
-    if (file.fieldname === 'image') {
+    if (file.fieldname === 'image' || file.fieldname === 'photos') {
       if (
         file.mimetype === 'image/jpeg' ||
         file.mimetype === 'image/png' ||
@@ -53,6 +53,7 @@ const fileUploadHandler = () => {
     fileFilter: filterFilter,
   }).fields([
     { name: 'image', maxCount: 3 },
+    { name: 'photos', maxCount: 10 },
     { name: 'media', maxCount: 3 },
     { name: 'doc', maxCount: 3 },
   ]);
@@ -75,9 +76,10 @@ const fileUploadHandler = () => {
               const request = req as any;
 
               // Determine folder path
-              if (fieldname === 'image') {
+              if (fieldname === 'image' || fieldname === 'photos') {
                 if (request.originalUrl?.includes('/chat')) folderPath = 'chat_image';
                 else if (request.originalUrl?.includes('/user') || request.originalUrl?.includes('/profile')) folderPath = 'Profile';
+                else if (request.originalUrl?.includes('/jobs')) folderPath = 'job_image';
               } else if (fieldname === 'doc') {
                 folderPath = 'chat_pdf';
               } else if (fieldname === 'media') {
@@ -89,7 +91,7 @@ const fileUploadHandler = () => {
               let extension = file.originalname.split('.').pop();
 
               // IMAGE PROCESSING STEP
-              if (fieldname === 'image') {
+              if (fieldname === 'image' || fieldname === 'photos') {
                 const processed = await processImage(file.buffer);
                 finalBuffer = processed.buffer;
                 finalMimetype = 'image/webp';

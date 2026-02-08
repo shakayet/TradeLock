@@ -54,8 +54,8 @@ if (config.oauth.google.clientID && config.oauth.google.clientSecret) {
           if (!user.providerId) {
             user.provider = 'google';
             user.providerId = id;
-            if (!user.avatar && photos?.[0]?.value) {
-              user.avatar = photos[0].value;
+            if (!user.get('avatar') && photos?.[0]?.value) {
+              user.set('avatar', photos[0].value);
             }
             await user.save();
           }

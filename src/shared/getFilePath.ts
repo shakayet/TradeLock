@@ -1,4 +1,4 @@
-type IFolderName = 'image' | 'media' | 'doc';
+type IFolderName = 'image' | 'media' | 'doc' | 'photos';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getSingleFilePath = (
