@@ -176,4 +176,21 @@ export const JobController = {
   getJobs,
   getSingleJob,
   updateJob,
+  deleteJob: catchAsync(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const existing = await JobService.getSingleJobFromDB(id);
+    if (existing?.photos?.length) {
+      for (const url of existing.photos) {
+        if (typeof url === 'string') {
+          deleteFromS3(url);
+        }
+      }
+    }
+    await JobService.deleteJobFromDB(id);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Job deleted successfully',
+    });
+  }),
 };

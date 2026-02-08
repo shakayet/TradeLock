@@ -52,4 +52,11 @@ router.patch(
   JobController.updateJob,
 );
 
+router.delete(
+  '/:id',
+  auth(USER_ROLES.USER, USER_ROLES.ADMIN),
+  validateRequest(JobValidation.jobIdParamsZodSchema),
+  JobController.deleteJob,
+);
+
 export const JobsRoutes = router;

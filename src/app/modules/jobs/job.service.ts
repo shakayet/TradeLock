@@ -55,4 +55,7 @@ export const JobService = {
   getJobsFromDB,
   getSingleJobFromDB,
   updateJobToDB,
+  deleteJobFromDB: async (id: string) => {
+    return Job.findByIdAndDelete(id);
+  },
 };
