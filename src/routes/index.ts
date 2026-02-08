@@ -8,6 +8,7 @@ import { TermsAndConditionsRoutes } from '../app/modules/termsAndConditions/term
 import { PersonalChatRoutes } from '../app/modules/personalChat/personalChat.route';
 import { JobsRoutes } from '../app/modules/jobs/job.route';
 import { ReminderRoutes } from '../app/modules/reminder/reminder.route';
+import { ReviewRoutes } from '../app/modules/review/review.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -46,6 +47,10 @@ const apiRoutes = [
   {
     path: '/reminders',
     route: ReminderRoutes,
+  },
+  {
+    path: '/reviews',
+    route: ReviewRoutes,
   },
 ];
 

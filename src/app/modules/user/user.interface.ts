@@ -13,7 +13,7 @@ export type IUser = {
   location?: {
     latitude: number;
     longitude: number;
-  }
+  };
   country?: string;
   trade_type?: string;
   image?: string;
@@ -24,6 +24,7 @@ export type IUser = {
   coverage_area?: string;
   services?: string;
   rating?: number;
+  ratingCount?: number;
   status: 'active' | 'delete';
   verified: boolean;
   provider?: 'local' | 'google' | 'facebook' | 'github';

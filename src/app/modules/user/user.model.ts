@@ -29,7 +29,7 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     country: {
       type: String,
-      default: "United Kingdom",
+      default: 'United Kingdom',
     },
     trade_type: {
       type: String,
@@ -63,6 +63,17 @@ const userSchema = new Schema<IUser, UserModal>(
         longitude: Number,
       },
       default: null,
+    },
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    ratingCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     status: {
       type: String,
