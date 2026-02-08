@@ -1,5 +1,6 @@
+/* eslint-disable no-undef */
 import path from 'path';
-import { ICreateAccount, IResetPassword } from '../types/emailTamplate';
+import { ICreateAccount, IResetPassword, IReminderEmail } from '../types/emailTamplate';
 
 const createAccount = (values: ICreateAccount) => {
   const logoPath = path.join(process.cwd(), 'src', 'assets', 'logo.png');
@@ -132,4 +133,73 @@ const resetPassword = (values: IResetPassword) => {
 export const emailTemplate = {
   createAccount,
   resetPassword,
+  reminderNotification: (values: IReminderEmail) => {
+    const logoPath = path.join(process.cwd(), 'src', 'assets', 'logo.png');
+    const data = {
+      to: values.email,
+      subject: `Reminder: ${values.title} starts in 30 minutes`,
+      html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Upcoming Reminder</title>
+          <style>
+              body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; }
+              .container { width: 100%; max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+              .header { background: #173616; padding: 32px; text-align: center; }
+              .content { padding: 30px 24px; }
+              .greeting { font-size: 20px; color: #173616; margin-bottom: 12px; font-weight: bold; }
+              .title { font-size: 18px; color: #111827; margin: 8px 0; font-weight: 600; }
+              .detail { font-size: 15px; color: #374151; margin: 6px 0; }
+              .box { background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 16px 0; }
+              .footer { background-color: #fafafa; padding: 20px; text-align: center; font-size: 12px; color: #aaa; border-top: 1px solid #eeeeee; }
+              .footer a { color: #173616; text-decoration: none; font-weight: 600; }
+              @media only screen and (max-width: 600px) {
+                  .container { margin: 15px; width: auto; }
+                  .content { padding: 24px 18px; }
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                   <img src="cid:logo" alt="TradeLock" style="max-width: 180px; height: auto; display: block; margin: 0 auto;">
+              </div>
+              <div class="content">
+                  <div class="greeting">Hello${values.name ? `, ${values.name}` : ''}</div>
+                  <div class="title">Your reminder starts soon</div>
+                  <div class="box">
+                    <p class="detail"><strong>Title:</strong> ${values.title}</p>
+                    <p class="detail"><strong>Start Time:</strong> ${values.startAtLocal}${
+                      values.timezone ? ` (${values.timezone})` : ''
+                    }</p>
+                    ${
+                      values.description
+                        ? `<p class="detail"><strong>Details:</strong> ${values.description}</p>`
+                        : ''
+                    }
+                    <p class="detail">This is your 30-minute reminder.</p>
+                  </div>
+                  <p style="font-size: 13px; color: #9ca3af; margin-top: 10px;">If you didn't set this reminder, you can ignore this email.</p>
+              </div>
+              <div class="footer">
+                  <p>&copy; ${new Date().getFullYear()} TradeLock. All rights reserved.</p>
+                  <p><a href="#">Privacy Policy</a> • <a href="#">Support</a></p>
+              </div>
+          </div>
+      </body>
+      </html>
+      `,
+      attachments: [
+        {
+          filename: 'logo.png',
+          path: logoPath,
+          cid: 'logo',
+        },
+      ],
+    };
+    return data;
+  },
 };

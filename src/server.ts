@@ -7,6 +7,7 @@ import { seedSuperAdmin } from './DB/seedAdmin';
 import { socketHelper } from './helpers/socketHelper';
 import { errorLogger, logger } from './shared/logger';
 import process from 'process';
+import { reminderScheduler } from './helpers/reminderScheduler';
 
 //uncaught exception
 process.on('uncaughtException', error => {
@@ -42,6 +43,7 @@ async function main() {
     socketHelper.socket(io);
     //@ts-ignore
     global.io = io;
+    await reminderScheduler.init();
   } catch (error) {
     errorLogger.error(colors.red('🤢 Failed to connect Database'));
   }
